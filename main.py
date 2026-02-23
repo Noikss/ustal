@@ -295,7 +295,7 @@ async def handle_text(message: types.Message):
             return
 
         else:
-            await message.answer("Группу не нашёл 😔\nПример: 'расписание 24-ИСП1-9'", reply_markup=get_main_keyboard())
+            await message.answer("Группу не нашёл 😔\nПример: 'расписание 24-ИСР2-9 или же пара 24-ИСР2-9'", reply_markup=get_main_keyboard())
             return
 
     # 2. Поиск преподавателя по фамилии
@@ -357,4 +357,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
