@@ -13,7 +13,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemo
 
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = "8152924251:AAHoqLk8xbwy-eQxAHPIML5ATGZnYkBJF5Q"
+BOT_TOKEN = "8217198862:AAGv-tRkQBZtH3eT2yJ4qMfBXmVv1QE1Y0A"
 MISTRAL_KEY = "rGmIVqCbaDh29Y7t3Yd7ipsbL0ZlQbny"
 
 # Создаем HTTPX клиент (без прокси)
@@ -357,5 +357,6 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
 
