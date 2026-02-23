@@ -122,10 +122,10 @@ async def handle_buttons(message: types.Message):
     user_id = message.from_user.id
     
     if text == "📚 Расписание":
-        await message.answer("📚 Напиши название группы, например:\n24-ИСП1-9\nили просто код группы")
+        await message.answer("📚 Напиши название группы, например:\nрасписание 24-ИСП1-9\nили просто код группы")
     
     elif text == "📄 Справка":
-        response = ("📄 **Для получения справки нужно:**\n\n"
+        response = ("📄 Для получения справки нужно:\n\n"
                    "• Паспорт\n"
                    "• Заявление\n"
                    "• Студенческий билет\n\n"
@@ -134,7 +134,7 @@ async def handle_buttons(message: types.Message):
         await message.answer(response)
     
     elif text == "🔄 Пересдача":
-        response = ("📝 **Информация о пересдачах:**\n\n"
+        response = ("📝 Информация о пересдачах:\n\n"
                    "• Задолженности нужно сдать до начала сессии\n"
                    "• Пересдача возможна 2 раза\n"
                    "• Для пересдачи обратиться в деканат\n\n"
@@ -142,7 +142,7 @@ async def handle_buttons(message: types.Message):
         await message.answer(response)
     
     elif text == "🎓 Студ билет":
-        response = ("🎓 **Студенческий билет:**\n\n"
+        response = ("🎓 Студенческий билет:\n\n"
                    "• Выдается после зачисления\n"
                    "• Действует весь период обучения\n"
                    "• При утере восстановить в деканате\n"
@@ -150,7 +150,7 @@ async def handle_buttons(message: types.Message):
         await message.answer(response)
     
     elif text == "💼 Практика":
-        response = ("💼 **Информация о практике:**\n\n"
+        response = ("💼 Информация о практике:\n\n"
                    "• Учебная практика\n"
                    "• Производственная практика\n"
                    "• Преддипломная практика\n\n"
@@ -158,7 +158,7 @@ async def handle_buttons(message: types.Message):
         await message.answer(response)
     
     elif text == "💰 Оплата":
-        response = ("💰 **Информация об оплате:**\n\n"
+        response = ("💰 Информация об оплате:\n\n"
                    "• Стоимость обучения уточняйте в бухгалтерии\n"
                    "• Возможна оплата по семестрам\n"
                    "• Реквизиты для оплаты:\n"
@@ -170,7 +170,7 @@ async def handle_buttons(message: types.Message):
         await message.answer(INSTITUTE_INFO)
     
     elif text == "📞 Контакты":
-        contacts = ("📞 **Контакты КИПО:**\n\n"
+        contacts = ("📞 Контакты КИПО:\n\n"
                    "• Телефон: 8 800 500 40 68 доб. 1180\n"
                    "• Адрес: г. Краснодар, ул. Садовая 218\n"
                    "• Деканат: каб. 101\n"
@@ -284,7 +284,7 @@ async def handle_text(message: types.Message):
         if found:
             if len(found) == 1:
                 code, url = found[0]
-                await message.answer(f"📚 Расписание **{code}**:\n{url}", reply_markup=get_main_keyboard())
+                await message.answer(f"📚 Расписание {code}:\n{url}", reply_markup=get_main_keyboard())
             else:
                 text = f"Нашёл {len(found)} вариантов:\n\n"
                 for c, u in found[:8]:
@@ -357,3 +357,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
