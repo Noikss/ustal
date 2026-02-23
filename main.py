@@ -192,7 +192,7 @@ async def handle_text(message: types.Message):
         if found:
             if len(found) == 1:
                 code, url = found[0]
-                await message.answer(f"Расписание **{code}**:\n{url}")
+                await message.answer(f"Расписание {code}:\n{url}")
             else:
                 text = f"Нашёл {len(found)} вариантов:\n\n"
                 for c, u in found[:8]:
@@ -266,4 +266,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 
