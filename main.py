@@ -12,7 +12,7 @@ import httpx  # Добавляем httpx для создания HTTP клиен
 
 logging.basicConfig(level=logging.INFO)
 
-BOT_TOKEN = "8152924251:AAFJmHGJXGWgQnCcs_O64NTR8YTrK42x0GE"
+BOT_TOKEN = "8152924251:AAHoqLk8xbwy-eQxAHPIML5ATGZnYkBJF5Q"
 MISTRAL_KEY = "rGmIVqCbaDh29Y7t3Yd7ipsbL0ZlQbny"
 
 # Создаем HTTPX клиент (без прокси)
@@ -266,3 +266,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
