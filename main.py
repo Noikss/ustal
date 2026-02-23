@@ -8,7 +8,8 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram import F
 from openai import AsyncOpenAI
-import httpx  # Добавляем httpx для создания HTTP клиента
+import httpx
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
 
 logging.basicConfig(level=logging.INFO)
 
@@ -17,7 +18,7 @@ MISTRAL_KEY = "rGmIVqCbaDh29Y7t3Yd7ipsbL0ZlQbny"
 
 # Создаем HTTPX клиент (без прокси)
 http_client = httpx.AsyncClient(
-    timeout=httpx.Timeout(60.0),  # Таймаут 60 секунд
+    timeout=httpx.Timeout(60.0),
     limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
 )
 
@@ -25,7 +26,7 @@ http_client = httpx.AsyncClient(
 client = AsyncOpenAI(
     api_key=MISTRAL_KEY,
     base_url="https://api.mistral.ai/v1",
-    http_client=http_client  # Важно: передаем http_client вместо proxies
+    http_client=http_client
 )
 
 bot = Bot(token=BOT_TOKEN)
@@ -42,6 +43,32 @@ INSTITUTE_INFO = """
 - Документы: заявление, паспорт, аттестат, 4 фото, медсправка 086/у
 - Контакты: 8 800 500 40 68 доб. 1180, г. Краснодар, ул. Садовая 218
 """
+
+# Функция для создания клавиатуры
+def get_main_keyboard():
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="📚 Расписание"),
+                KeyboardButton(text="📄 Справка")
+            ],
+            [
+                KeyboardButton(text="🔄 Пересдача"),
+                KeyboardButton(text="🎓 Студ билет")
+            ],
+            [
+                KeyboardButton(text="💼 Практика"),
+                KeyboardButton(text="💰 Оплата")
+            ],
+            [
+                KeyboardButton(text="🏫 Об институте"),
+                KeyboardButton(text="📞 Контакты")
+            ]
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите действие или напишите вопрос..."
+    )
+    return keyboard
 
 # Загрузка групп
 try:
@@ -77,14 +104,79 @@ async def start_cmd(message: types.Message):
         "Абрамова\n"
         "Ашинова\n"
         "что на фото?\n"
-        "/clear — очистить чат"
+        "/clear — очистить чат\n\n"
+        "Используй кнопки ниже 👇",
+        reply_markup=get_main_keyboard()
     )
 
 @dp.message(Command("clear"))
 async def clear_cmd(message: types.Message):
     user_id = message.from_user.id
     user_history[user_id] = []
-    await message.answer("🧹 Чат очищен!")
+    await message.answer("🧹 Чат очищен!", reply_markup=get_main_keyboard())
+
+# Обработчик кнопок
+@dp.message(F.text.in_(["📚 Расписание", "📄 Справка", "🔄 Пересдача", "🎓 Студ билет", "💼 Практика", "💰 Оплата", "🏫 Об институте", "📞 Контакты"]))
+async def handle_buttons(message: types.Message):
+    text = message.text
+    user_id = message.from_user.id
+    
+    if text == "📚 Расписание":
+        await message.answer("📚 Напиши название группы, например:\n24-ИСП1-9\nили просто код группы")
+    
+    elif text == "📄 Справка":
+        response = ("📄 **Для получения справки нужно:**\n\n"
+                   "• Паспорт\n"
+                   "• Заявление\n"
+                   "• Студенческий билет\n\n"
+                   "Обратитесь в деканат КИПО.\n"
+                   "📍 ул. Садовая 218")
+        await message.answer(response)
+    
+    elif text == "🔄 Пересдача":
+        response = ("📝 **Информация о пересдачах:**\n\n"
+                   "• Задолженности нужно сдать до начала сессии\n"
+                   "• Пересдача возможна 2 раза\n"
+                   "• Для пересдачи обратиться в деканат\n\n"
+                   "Контакты деканата: 8 800 500 40 68 доб. 1180")
+        await message.answer(response)
+    
+    elif text == "🎓 Студ билет":
+        response = ("🎓 **Студенческий билет:**\n\n"
+                   "• Выдается после зачисления\n"
+                   "• Действует весь период обучения\n"
+                   "• При утере восстановить в деканате\n"
+                   "• Фото 3x4 для оформления")
+        await message.answer(response)
+    
+    elif text == "💼 Практика":
+        response = ("💼 **Информация о практике:**\n\n"
+                   "• Учебная практика\n"
+                   "• Производственная практика\n"
+                   "• Преддипломная практика\n\n"
+                   "График практики уточняйте у куратора группы")
+        await message.answer(response)
+    
+    elif text == "💰 Оплата":
+        response = ("💰 **Информация об оплате:**\n\n"
+                   "• Стоимость обучения уточняйте в бухгалтерии\n"
+                   "• Возможна оплата по семестрам\n"
+                   "• Реквизиты для оплаты:\n"
+                   "Обратитесь в бухгалтерию КИПО\n\n"
+                   "📞 8 800 500 40 68 доб. 1180")
+        await message.answer(response)
+    
+    elif text == "🏫 Об институте":
+        await message.answer(INSTITUTE_INFO)
+    
+    elif text == "📞 Контакты":
+        contacts = ("📞 **Контакты КИПО:**\n\n"
+                   "• Телефон: 8 800 500 40 68 доб. 1180\n"
+                   "• Адрес: г. Краснодар, ул. Садовая 218\n"
+                   "• Деканат: каб. 101\n"
+                   "• Приемная комиссия: каб. 105\n\n"
+                   "Режим работы: Пн-Пт 9:00-18:00")
+        await message.answer(contacts)
 
 @dp.message(F.photo)
 async def handle_photo(message: types.Message):
@@ -130,16 +222,16 @@ async def handle_photo(message: types.Message):
         reply = response.choices[0].message.content.strip()
         history.append({"role": "assistant", "content": reply})
         user_history[user_id] = history
-        await message.answer(reply)
+        await message.answer(reply, reply_markup=get_main_keyboard())
     except Exception as e:
         logging.error(f"Vision error: {e}")
         err = str(e).lower()
         if "rate limit" in err or "429" in err:
-            await message.answer("⚠️ Лимит — подожди 30–60 сек.")
+            await message.answer("⚠️ Лимит — подожди 30–60 сек.", reply_markup=get_main_keyboard())
         elif "model" in err:
-            await message.answer("Модель pixtral-large-latest недоступна сейчас. Попробуй позже.")
+            await message.answer("Модель pixtral-large-latest недоступна сейчас. Попробуй позже.", reply_markup=get_main_keyboard())
         else:
-            await message.answer("😔 Проблема с анализом фото. Попробуй другую картинку.")
+            await message.answer("😔 Проблема с анализом фото. Попробуй другую картинку.", reply_markup=get_main_keyboard())
 
 @dp.message(F.text)
 async def handle_text(message: types.Message):
@@ -164,7 +256,7 @@ async def handle_text(message: types.Message):
         date_str = now.strftime("%d %B %Y года")
         time_str = now.strftime("%H:%M")
         day_ru = weekday_ru[now.strftime("%A")]
-        await message.answer(f"Сегодня {day_ru}, {date_str}.\nВремя в Москве: {time_str}")
+        await message.answer(f"Сегодня {day_ru}, {date_str}.\nВремя в Москве: {time_str}", reply_markup=get_main_keyboard())
         return
 
     # 1. Расписание группы
@@ -192,18 +284,18 @@ async def handle_text(message: types.Message):
         if found:
             if len(found) == 1:
                 code, url = found[0]
-                await message.answer(f"Расписание {code}:\n{url}")
+                await message.answer(f"📚 Расписание **{code}**:\n{url}", reply_markup=get_main_keyboard())
             else:
                 text = f"Нашёл {len(found)} вариантов:\n\n"
                 for c, u in found[:8]:
                     text += f"• {c} → {u}\n"
                 if len(found) > 8:
                     text += f"...ещё {len(found)-8}. Уточни."
-                await message.answer(text)
+                await message.answer(text, reply_markup=get_main_keyboard())
             return
 
         else:
-            await message.answer("Группу не нашёл 😔\nПример: 'расписание 24-ИСП1-9'")
+            await message.answer("Группу не нашёл 😔\nПример: 'расписание 24-ИСП1-9'", reply_markup=get_main_keyboard())
             return
 
     # 2. Поиск преподавателя по фамилии
@@ -219,7 +311,7 @@ async def handle_text(message: types.Message):
         if found:
             if len(found) == 1:
                 name, url = found[0]
-                await message.answer(f"Преподаватель: {name}\nРасписание: {url}")
+                await message.answer(f"👨‍🏫 Преподаватель: {name}\nРасписание: {url}", reply_markup=get_main_keyboard())
             else:
                 text = f"Нашёл {len(found)} похожих преподавателей:\n\n"
                 for i, (name, url) in enumerate(found[:12], 1):
@@ -227,7 +319,7 @@ async def handle_text(message: types.Message):
                 if len(found) > 12:
                     text += f"\n...ещё {len(found)-12}. Уточни фамилию."
                 text += "\n\nНапиши номер или фамилию точнее:"
-                await message.answer(text)
+                await message.answer(text, reply_markup=get_main_keyboard())
             return
 
     # 3. Всё остальное — Mistral
@@ -251,20 +343,17 @@ async def handle_text(message: types.Message):
         reply = response.choices[0].message.content.strip()
         history.append({"role": "assistant", "content": reply})
         user_history[user_id] = history
-        await message.answer(reply)
+        await message.answer(reply, reply_markup=get_main_keyboard())
     except Exception as e:
         logging.error(f"Ошибка: {e}")
-        await message.answer("😔 Проблема. Попробуй позже или звони: 8 800 500 40 68 доб. 1180")
+        await message.answer("😔 Проблема. Попробуй позже или звони: 8 800 500 40 68 доб. 1180", reply_markup=get_main_keyboard())
 
 async def main():
     try:
         await dp.start_polling(bot)
     finally:
-        # Важно: закрываем HTTP клиент при завершении
         await http_client.aclose()
         await bot.session.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-
