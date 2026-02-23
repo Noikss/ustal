@@ -8,15 +8,24 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram import F
 from openai import AsyncOpenAI
+import httpx  # Добавляем httpx для создания HTTP клиента
 
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = "8152924251:AAFJmHGJXGWgQnCcs_O64NTR8YTrK42x0GE"
 MISTRAL_KEY = "rGmIVqCbaDh29Y7t3Yd7ipsbL0ZlQbny"
 
+# Создаем HTTPX клиент (без прокси)
+http_client = httpx.AsyncClient(
+    timeout=httpx.Timeout(60.0),  # Таймаут 60 секунд
+    limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+)
+
+# Инициализируем OpenAI клиент с HTTP клиентом
 client = AsyncOpenAI(
     api_key=MISTRAL_KEY,
     base_url="https://api.mistral.ai/v1",
+    http_client=http_client  # Важно: передаем http_client вместо proxies
 )
 
 bot = Bot(token=BOT_TOKEN)
@@ -43,7 +52,7 @@ except Exception as e:
     logging.error(f"groups.json ошибка: {e}")
     GROUP_SCHEDULES = {}
 
-# Загрузка преподавателей (точно так же, как groups)
+# Загрузка преподавателей
 try:
     with open('teachers.json', 'r', encoding='utf-8') as f:
         TEACHERS = json.load(f)
@@ -68,8 +77,7 @@ async def start_cmd(message: types.Message):
         "Абрамова\n"
         "Ашинова\n"
         "что на фото?\n"
-        "/clear — очистить чат",
-        parse_mode="Markdown"
+        "/clear — очистить чат"
     )
 
 @dp.message(Command("clear"))
@@ -249,7 +257,12 @@ async def handle_text(message: types.Message):
         await message.answer("😔 Проблема. Попробуй позже или звони: 8 800 500 40 68 доб. 1180")
 
 async def main():
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        # Важно: закрываем HTTP клиент при завершении
+        await http_client.aclose()
+        await bot.session.close()
 
 if __name__ == "__main__":
     asyncio.run(main())
